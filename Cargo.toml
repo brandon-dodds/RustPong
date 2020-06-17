@@ -1,5 +1,5 @@
 [package]
-name = "untitled1"
+name = "rust_pong"
 version = "0.1.0"
 authors = ["Brandon Dodds <brandon.lee.dodds@gmail.com>"]
 edition = "2018"

@@ -2,7 +2,6 @@ use ggez::*;
 use cgmath;
 use ggez::graphics::DrawParam;
 use cgmath::Vector2;
-use ggez::conf::WindowMode;
 
 struct MainState {
     player1_coord: cgmath::Vector2<f32>,
@@ -11,8 +10,8 @@ struct MainState {
 
 impl MainState{
     fn new(_ctx: &mut Context) -> GameResult<MainState> {
-        let player1_coord = Vector2::new(10.0, 360.0);
-        let player2_coord = Vector2::new(1270.0, 360.0);
+        let player1_coord = Vector2::new(100.0, 285.0);
+        let player2_coord = Vector2::new(1170.0, 285.0);
 
         let s = MainState {
             player1_coord,
@@ -51,7 +50,7 @@ pub fn main() -> GameResult{
     let cb = ggez::ContextBuilder::new("Game1","Brandon");
     let(ctx, events_loop) = &mut cb.build()?;
     let state = &mut MainState::new(ctx).unwrap();
-    graphics::set_drawable_size(ctx, 1280.0, 720.0);
-    graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, 1280.0, 720.0));
+    graphics::set_drawable_size(ctx, 1280.0, 720.0).unwrap();
+    graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, 1280.0, 720.0)).unwrap();
     event::run(ctx,events_loop,state)
 }

@@ -26,6 +26,8 @@ impl MainState{
         Ok(s)
     }
 }
+//TODO Add a ball updater.
+
 
 impl event::EventHandler for MainState{
     fn update(&mut self, ctx: &mut Context) -> GameResult {

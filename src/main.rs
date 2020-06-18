@@ -27,8 +27,14 @@ impl MainState {
         Ok(s)
     }
     //Resetting the ball position/Handling the physics of ball.
-    fn ball_update_position(&mut self) {
-        self.ball_coord = Point2::new(640.0, 360.0);
+    fn ball_update_position(&mut self, player_val: i8) {
+        if player_val == 1 {
+            let paddle_middle = (self.player1_coord.y + self.player1_coord.y + 150.0) / 2.0;
+            let diff = (paddle_middle - self.ball_coord.y).abs();
+            println!("{}", diff);
+            self.ball_coord = Point2::new(640.0, 360.0)
+        } else {
+        }
     }
 }
 
@@ -48,20 +54,20 @@ impl event::EventHandler for MainState {
             self.player2_coord.y += 10.0
         }
         //Ball code.
-        self.ball_coord += Vector2::new(2.0, 0.0);
+        self.ball_coord += Vector2::new(-2.0, 0.0);
         if (self.ball_coord.x == self.player1_coord.x
             || self.ball_coord.x == self.player1_coord.x + 10.0)
             && self.ball_coord.y >= self.player1_coord.y
             && self.ball_coord.y <= self.player1_coord.y + 150.0
         {
-            self.ball_update_position();
+            self.ball_update_position(1);
         }
         if (self.ball_coord.x == self.player2_coord.x
             || self.ball_coord.x == self.player2_coord.x + 10.0)
             && self.ball_coord.y >= self.player2_coord.y
             && self.ball_coord.y <= self.player2_coord.y + 150.0
         {
-            self.ball_update_position();
+            self.ball_update_position(2);
         }
         Ok(())
     }
@@ -105,7 +111,7 @@ impl event::EventHandler for MainState {
 
 pub fn main() -> GameResult {
     //Main context and event loop creation.
-    let cb = ggez::ContextBuilder::new("Game1", "Brandon");
+    let cb = ggez::ContextBuilder::new("Rust Pong!", "Brandon");
     let (ctx, events_loop) = &mut cb.build()?;
     let state = &mut MainState::new(ctx).unwrap();
     //Makes the window the right size.

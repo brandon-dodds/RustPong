@@ -10,6 +10,7 @@ struct MainState {
     player1_coord: Vector2<f32>,
     player2_coord: Vector2<f32>,
     ball_coord: Point2<f32>,
+    ball_movement: Vector2<f32>,
 }
 //Implements the main state. New is created on creation of the game state.
 impl MainState {
@@ -17,11 +18,12 @@ impl MainState {
         let player1_coord = Vector2::new(100.0, 285.0);
         let player2_coord = Vector2::new(1170.0, 285.0);
         let ball_coord = Point2::new(640.0, 360.0);
-
+        let ball_movement = Vector2::new(-5.0, 0.0);
         let s = MainState {
             player1_coord,
             player2_coord,
             ball_coord,
+            ball_movement,
         };
 
         Ok(s)
@@ -29,11 +31,21 @@ impl MainState {
     //Resetting the ball position/Handling the physics of ball.
     fn ball_update_position(&mut self, player_val: i8) {
         if player_val == 1 {
-            let paddle_middle = (self.player1_coord.y + self.player1_coord.y + 150.0) / 2.0;
-            let diff = (paddle_middle - self.ball_coord.y).abs();
+            let paddle_middle = (self.player1_coord.y * 2.0 + 150.0) / 2.0;
+            let diff = paddle_middle - self.ball_coord.y;
+            let normalized_value: f32 = diff / ((self.player1_coord.y + 150.0) / 2.0);
+            let bounce_angle = normalized_value * std::f32::consts::FRAC_PI_4 / 12.0;
+            self.ball_movement.x = 5.0 * bounce_angle.cos();
+            self.ball_movement.y = 5.0 * -bounce_angle.sin();
             println!("{}", diff);
-            self.ball_coord = Point2::new(640.0, 360.0)
-        } else {
+        } else if player_val == 2 {
+            let paddle_middle = (self.player2_coord.y * 2.0 + 150.0) / 2.0;
+            let diff = paddle_middle - self.ball_coord.y;
+            let normalized_value: f32 = diff / ((self.player2_coord.y + 150.0) / 2.0);
+            let bounce_angle = normalized_value * std::f32::consts::FRAC_PI_4 / 12.0;
+            self.ball_movement.x = 5.0 * -bounce_angle.cos();
+            self.ball_movement.y = 5.0 * bounce_angle.sin();
+            println!("{}", diff);
         }
     }
 }
@@ -54,7 +66,7 @@ impl event::EventHandler for MainState {
             self.player2_coord.y += 10.0
         }
         //Ball code.
-        self.ball_coord += Vector2::new(-2.0, 0.0);
+        self.ball_coord += self.ball_movement;
         if (self.ball_coord.x == self.player1_coord.x
             || self.ball_coord.x == self.player1_coord.x + 10.0)
             && self.ball_coord.y >= self.player1_coord.y

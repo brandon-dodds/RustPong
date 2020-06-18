@@ -29,12 +29,19 @@ impl MainState{
 
 impl event::EventHandler for MainState{
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-
+        //Keyboard control code.
         if keyboard::is_key_pressed(ctx,KeyCode::W) && self.player1_coord.y >= 0.0 { self.player1_coord.y -= 10.0; }
         if keyboard::is_key_pressed(ctx, KeyCode::S) && self.player1_coord.y <= 570.0 { self.player1_coord.y += 10.0 }
         if keyboard::is_key_pressed(ctx,KeyCode::Up) && self.player2_coord.y >= 0.0 { self.player2_coord.y -= 10.0; }
         if keyboard::is_key_pressed(ctx, KeyCode::Down) && self.player2_coord.y <= 570.0 { self.player2_coord.y += 10.0 }
-
+        //Ball code.
+        self.ball_coord+=Vector2::new(2.0,0.0);
+        if self.ball_coord.x == self.player1_coord.x && self.ball_coord.y >= self.player1_coord.y && self.ball_coord.y <=self.player1_coord.y + 150.0 {
+            println!("Hit! P1");
+        }
+        if self.ball_coord.x == self.player2_coord.x && self.ball_coord.y >= self.player2_coord.y && self.ball_coord.y <=self.player2_coord.y + 150.0 {
+            println!("Hit! P2");
+        }
         Ok(())
     }
 

@@ -6,9 +6,9 @@ use ggez::input::keyboard;
 use ggez::input::keyboard::KeyCode;
 
 struct MainState {
-    player1_coord: cgmath::Vector2<f32>,
-    player2_coord: cgmath::Vector2<f32>,
-    ball_coord: cgmath::Point2<f32>
+    player1_coord: Vector2<f32>,
+    player2_coord: Vector2<f32>,
+    ball_coord: Point2<f32>
 }
 
 impl MainState{
@@ -35,12 +35,12 @@ impl event::EventHandler for MainState{
         if keyboard::is_key_pressed(ctx,KeyCode::Up) && self.player2_coord.y >= 0.0 { self.player2_coord.y -= 10.0; }
         if keyboard::is_key_pressed(ctx, KeyCode::Down) && self.player2_coord.y <= 570.0 { self.player2_coord.y += 10.0 }
         //Ball code.
-        self.ball_coord+=Vector2::new(2.0,0.0);
+        self.ball_coord+=Vector2::new(-2.0,0.0);
         if self.ball_coord.x == self.player1_coord.x && self.ball_coord.y >= self.player1_coord.y && self.ball_coord.y <=self.player1_coord.y + 150.0 {
-            println!("Hit! P1");
+            self.ball_coord=Point2::new(640.0, 360.0);
         }
         if self.ball_coord.x == self.player2_coord.x && self.ball_coord.y >= self.player2_coord.y && self.ball_coord.y <=self.player2_coord.y + 150.0 {
-            println!("Hit! P2");
+            self.ball_coord=Point2::new(640.0, 360.0);
         }
         Ok(())
     }

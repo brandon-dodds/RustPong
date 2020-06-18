@@ -29,22 +29,32 @@ impl MainState {
         Ok(s)
     }
     //Resetting the ball position/Handling the physics of ball.
+    //Maths works as follows, find the difference between the ball y coord and the middle of the bat.
+    // Use trigonometry to send the ball at an angle according to this difference.
     fn ball_update_position(&mut self, player_val: i8) {
         let degree: f32 = 75.0;
         if player_val == 1 {
+            println!("HIT P1!");
             let paddle_middle = (self.player1_coord.y * 2.0 + 150.0) / 2.0;
             let diff = paddle_middle - self.ball_coord.y;
             let normalized_value: f32 = diff / ((self.player1_coord.y + 150.0) / 2.0);
             let bounce_angle = normalized_value * degree.to_radians();
             self.ball_movement.x = 5.0 * bounce_angle.cos();
             self.ball_movement.y = 5.0 * -bounce_angle.sin();
-        } else {
+        } else if player_val == 2 {
+            println!("HIT P2!");
             let paddle_middle = (self.player2_coord.y * 2.0 + 150.0) / 2.0;
             let diff = paddle_middle - self.ball_coord.y;
             let normalized_value: f32 = diff / ((self.player2_coord.y + 150.0) / 2.0);
             let bounce_angle: f32 = normalized_value * degree.to_radians();
             self.ball_movement.x = 5.0 * -bounce_angle.cos();
-            self.ball_movement.y = 5.0 * bounce_angle.sin();
+            self.ball_movement.y = 5.0 * -bounce_angle.sin();
+        } else if player_val == 3 {
+            println!("Hit top.");
+            self.ball_movement.y = 5.0 * -degree.sin();
+        } else if player_val == 4 {
+            println!("HIT BOTTOM!");
+            self.ball_movement.y = 5.0 * degree.sin();
         }
     }
 }
@@ -66,21 +76,33 @@ impl event::EventHandler for MainState {
         }
         //Ball code.
         self.ball_coord += self.ball_movement;
-        if self.player1_coord.x <= self.ball_coord.x
+        if self.ball_coord.x >= self.player1_coord.x
             && self.ball_coord.x <= self.player1_coord.x + 10.0
             && self.ball_coord.y >= self.player1_coord.y
             && self.ball_coord.y <= self.player1_coord.y + 150.0
         {
-            println!("HIT!");
             self.ball_update_position(1);
         }
         if self.ball_coord.x >= self.player2_coord.x
-            && self.ball_coord.x >= self.player2_coord.x + 10.0
+            && self.ball_coord.x <= self.player2_coord.x + 10.0
             && self.ball_coord.y >= self.player2_coord.y
             && self.ball_coord.y <= self.player2_coord.y + 150.0
         {
-            println!("HIT!");
             self.ball_update_position(2);
+        }
+        if self.ball_coord.y <= 0.0 {
+            self.ball_update_position(3);
+        }
+        if self.ball_coord.y >= graphics::drawable_size(ctx).1 {
+            self.ball_update_position(4);
+        }
+        if self.ball_coord.x <= 0.0 {
+            println!("Player 2 wins!");
+            ggez::event::quit(ctx);
+        }
+        if self.ball_coord.x >= graphics::drawable_size(ctx).0 {
+            println!("Player 1 wins!");
+            ggez::event::quit(ctx);
         }
         Ok(())
     }

@@ -66,16 +66,16 @@ impl event::EventHandler for MainState {
         }
         //Ball code.
         self.ball_coord += self.ball_movement;
-        if (self.ball_coord.x == self.player1_coord.x
-            || self.ball_coord.x == self.player1_coord.x + 10.0)
+        if self.player1_coord.x <= self.ball_coord.x
+            && self.ball_coord.x <= self.player1_coord.x + 10.0
             && self.ball_coord.y >= self.player1_coord.y
             && self.ball_coord.y <= self.player1_coord.y + 150.0
         {
             println!("HIT!");
             self.ball_update_position(1);
         }
-        if (self.ball_coord.x == self.player2_coord.x
-            || self.ball_coord.x == self.player2_coord.x + 10.0)
+        if self.ball_coord.x >= self.player2_coord.x
+            && self.ball_coord.x >= self.player2_coord.x + 10.0
             && self.ball_coord.y >= self.player2_coord.y
             && self.ball_coord.y <= self.player2_coord.y + 150.0
         {

@@ -33,28 +33,25 @@ impl MainState {
     // Use trigonometry to send the ball at an angle according to this difference.
     fn ball_update_position(&mut self, player_val: i8) {
         let degree: f32 = 75.0;
+        let speed = 5.0;
         if player_val == 1 {
-            println!("HIT P1!");
             let paddle_middle = (self.player1_coord.y * 2.0 + 150.0) / 2.0;
             let diff = paddle_middle - self.ball_coord.y;
             let normalized_value: f32 = diff / ((self.player1_coord.y + 150.0) / 2.0);
             let bounce_angle = normalized_value * degree.to_radians();
-            self.ball_movement.x = 5.0 * bounce_angle.cos();
-            self.ball_movement.y = 5.0 * -bounce_angle.sin();
+            self.ball_movement.x = speed * bounce_angle.cos();
+            self.ball_movement.y = speed * -bounce_angle.sin();
         } else if player_val == 2 {
-            println!("HIT P2!");
             let paddle_middle = (self.player2_coord.y * 2.0 + 150.0) / 2.0;
             let diff = paddle_middle - self.ball_coord.y;
             let normalized_value: f32 = diff / ((self.player2_coord.y + 150.0) / 2.0);
             let bounce_angle: f32 = normalized_value * degree.to_radians();
-            self.ball_movement.x = 5.0 * -bounce_angle.cos();
-            self.ball_movement.y = 5.0 * -bounce_angle.sin();
+            self.ball_movement.x = speed * -bounce_angle.cos();
+            self.ball_movement.y = speed * -bounce_angle.sin();
         } else if player_val == 3 {
-            println!("Hit top.");
-            self.ball_movement.y = 5.0 * -degree.sin();
+            self.ball_movement.y = speed * -degree.sin();
         } else if player_val == 4 {
-            println!("HIT BOTTOM!");
-            self.ball_movement.y = 5.0 * degree.sin();
+            self.ball_movement.y = speed * degree.sin();
         }
     }
 }
@@ -97,11 +94,9 @@ impl event::EventHandler for MainState {
             self.ball_update_position(4);
         }
         if self.ball_coord.x <= 0.0 {
-            println!("Player 2 wins!");
             ggez::event::quit(ctx);
         }
         if self.ball_coord.x >= graphics::drawable_size(ctx).0 {
-            println!("Player 1 wins!");
             ggez::event::quit(ctx);
         }
         Ok(())

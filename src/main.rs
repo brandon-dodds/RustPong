@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use crate::CollideableObjects::PLAYER2;
 use cgmath;
 use cgmath::{Point2, Vector2};
 use ggez::graphics::DrawParam;
@@ -47,34 +48,48 @@ impl MainState {
     //Resetting the ball position/Handling the physics of ball.
     //Maths works as follows, find the difference between the ball y coord and the middle of the bat.
     // Use trigonometry to send the ball at an angle according to this difference.
+    fn update_angle(&mut self, player_val: CollideableObjects) -> f32 {
+        let base_angle: f32 = 75.0;
+        match player_val {
+            CollideableObjects::PLAYER1 | CollideableObjects::PLAYER2 => {
+                let current_y_coord = match player_val {
+                    CollideableObjects::PLAYER1 => self.player1_coord.y,
+                    _ => self.player2_coord.y,
+                };
+                let paddle_middle = (current_y_coord * 2.0 + 150.0) / 2.0;
+                let diff = paddle_middle - self.used_ball.ball_coord.y;
+                let normalized_angle: f32 = diff / ((current_y_coord + 150.0) / 2.0);
+                let bounce_angle = normalized_angle * base_angle.to_radians();
+                return bounce_angle;
+            }
+            _ => base_angle,
+        }
+    }
     fn ball_update_position(&mut self, player_val: CollideableObjects) {
-        let degree: f32 = 75.0;
         if self.used_ball.ball_speed < 12.0 {
             self.used_ball.ball_speed += 1.0;
         }
         let speed = self.used_ball.ball_speed;
         match player_val {
             CollideableObjects::PLAYER1 => {
-                let paddle_middle = (self.player1_coord.y * 2.0 + 150.0) / 2.0;
-                let diff = paddle_middle - self.used_ball.ball_coord.y;
-                let normalized_value: f32 = diff / ((self.player1_coord.y + 150.0) / 2.0);
-                let bounce_angle = normalized_value * degree.to_radians();
-                self.used_ball.ball_movement.x = speed * bounce_angle.cos();
-                self.used_ball.ball_movement.y = speed * -bounce_angle.sin();
+                self.used_ball.ball_movement.x =
+                    speed * self.update_angle(CollideableObjects::PLAYER1).cos();
+                self.used_ball.ball_movement.y =
+                    speed * -self.update_angle(CollideableObjects::PLAYER1).sin();
             }
             CollideableObjects::PLAYER2 => {
-                let paddle_middle = (self.player2_coord.y * 2.0 + 150.0) / 2.0;
-                let diff = paddle_middle - self.used_ball.ball_coord.y;
-                let normalized_value: f32 = diff / ((self.player2_coord.y + 150.0) / 2.0);
-                let bounce_angle: f32 = normalized_value * degree.to_radians();
-                self.used_ball.ball_movement.x = speed * -bounce_angle.cos();
-                self.used_ball.ball_movement.y = speed * -bounce_angle.sin();
+                self.used_ball.ball_movement.x =
+                    speed * -self.update_angle(CollideableObjects::PLAYER2).cos();
+                self.used_ball.ball_movement.y =
+                    speed * -self.update_angle(CollideableObjects::PLAYER2).sin();
             }
             CollideableObjects::TOP => {
-                self.used_ball.ball_movement.y = speed * -degree.sin();
+                self.used_ball.ball_movement.y =
+                    speed * -self.update_angle(CollideableObjects::TOP).sin();
             }
             CollideableObjects::BOTTOM => {
-                self.used_ball.ball_movement.y = speed * degree.sin();
+                self.used_ball.ball_movement.y =
+                    speed * self.update_angle(CollideableObjects::BOTTOM).sin();
             }
         }
     }

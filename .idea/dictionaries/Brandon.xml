@@ -1,6 +1,7 @@
 <component name="ProjectDictionaryState">
   <dictionary name="Brandon">
     <words>
+      <w>collideable</w>
       <w>drawables</w>
       <w>ggez</w>
       <w>helloworld</w>

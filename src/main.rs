@@ -8,7 +8,12 @@ use ggez::input::keyboard::KeyCode;
 use ggez::*;
 
 //The ball struct.
-
+enum CollideableObjects {
+    PLAYER1,
+    PLAYER2,
+    TOP,
+    BOTTOM,
+}
 struct Ball {
     ball_coord: Point2<f32>,
     ball_movement: Vector2<f32>,
@@ -42,31 +47,35 @@ impl MainState {
     //Resetting the ball position/Handling the physics of ball.
     //Maths works as follows, find the difference between the ball y coord and the middle of the bat.
     // Use trigonometry to send the ball at an angle according to this difference.
-    fn ball_update_position(&mut self, player_val: i8) {
+    fn ball_update_position(&mut self, player_val: CollideableObjects) {
         let degree: f32 = 75.0;
         if self.used_ball.ball_speed < 12.0 {
             self.used_ball.ball_speed += 1.0;
         }
         let speed = self.used_ball.ball_speed;
-        println!("{}", speed);
-        if player_val == 1 {
-            let paddle_middle = (self.player1_coord.y * 2.0 + 150.0) / 2.0;
-            let diff = paddle_middle - self.used_ball.ball_coord.y;
-            let normalized_value: f32 = diff / ((self.player1_coord.y + 150.0) / 2.0);
-            let bounce_angle = normalized_value * degree.to_radians();
-            self.used_ball.ball_movement.x = speed * bounce_angle.cos();
-            self.used_ball.ball_movement.y = speed * -bounce_angle.sin();
-        } else if player_val == 2 {
-            let paddle_middle = (self.player2_coord.y * 2.0 + 150.0) / 2.0;
-            let diff = paddle_middle - self.used_ball.ball_coord.y;
-            let normalized_value: f32 = diff / ((self.player2_coord.y + 150.0) / 2.0);
-            let bounce_angle: f32 = normalized_value * degree.to_radians();
-            self.used_ball.ball_movement.x = speed * -bounce_angle.cos();
-            self.used_ball.ball_movement.y = speed * -bounce_angle.sin();
-        } else if player_val == 3 {
-            self.used_ball.ball_movement.y = speed * -degree.sin();
-        } else if player_val == 4 {
-            self.used_ball.ball_movement.y = speed * degree.sin();
+        match player_val {
+            CollideableObjects::PLAYER1 => {
+                let paddle_middle = (self.player1_coord.y * 2.0 + 150.0) / 2.0;
+                let diff = paddle_middle - self.used_ball.ball_coord.y;
+                let normalized_value: f32 = diff / ((self.player1_coord.y + 150.0) / 2.0);
+                let bounce_angle = normalized_value * degree.to_radians();
+                self.used_ball.ball_movement.x = speed * bounce_angle.cos();
+                self.used_ball.ball_movement.y = speed * -bounce_angle.sin();
+            }
+            CollideableObjects::PLAYER2 => {
+                let paddle_middle = (self.player2_coord.y * 2.0 + 150.0) / 2.0;
+                let diff = paddle_middle - self.used_ball.ball_coord.y;
+                let normalized_value: f32 = diff / ((self.player2_coord.y + 150.0) / 2.0);
+                let bounce_angle: f32 = normalized_value * degree.to_radians();
+                self.used_ball.ball_movement.x = speed * -bounce_angle.cos();
+                self.used_ball.ball_movement.y = speed * -bounce_angle.sin();
+            }
+            CollideableObjects::TOP => {
+                self.used_ball.ball_movement.y = speed * -degree.sin();
+            }
+            CollideableObjects::BOTTOM => {
+                self.used_ball.ball_movement.y = speed * degree.sin();
+            }
         }
     }
 }
@@ -93,20 +102,20 @@ impl event::EventHandler for MainState {
             && self.used_ball.ball_coord.y >= self.player1_coord.y
             && self.used_ball.ball_coord.y <= self.player1_coord.y + 150.0
         {
-            self.ball_update_position(1);
+            self.ball_update_position(CollideableObjects::PLAYER1);
         }
         if self.used_ball.ball_coord.x >= self.player2_coord.x
             && self.used_ball.ball_coord.x <= self.player2_coord.x + 10.0
             && self.used_ball.ball_coord.y >= self.player2_coord.y
             && self.used_ball.ball_coord.y <= self.player2_coord.y + 150.0
         {
-            self.ball_update_position(2);
+            self.ball_update_position(CollideableObjects::PLAYER2);
         }
         if self.used_ball.ball_coord.y <= 0.0 {
-            self.ball_update_position(3);
+            self.ball_update_position(CollideableObjects::TOP);
         }
         if self.used_ball.ball_coord.y >= graphics::drawable_size(ctx).1 {
-            self.ball_update_position(4);
+            self.ball_update_position(CollideableObjects::BOTTOM);
         }
         if self.used_ball.ball_coord.x <= 0.0 {
             ggez::event::quit(ctx);

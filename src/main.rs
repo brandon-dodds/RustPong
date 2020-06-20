@@ -1,6 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use crate::CollideableObjects::PLAYER2;
 use cgmath;
 use cgmath::{Point2, Vector2};
 use ggez::graphics::DrawParam;
@@ -8,13 +7,13 @@ use ggez::input::keyboard;
 use ggez::input::keyboard::KeyCode;
 use ggez::*;
 
-//The ball struct.
 enum CollideableObjects {
     PLAYER1,
     PLAYER2,
     TOP,
     BOTTOM,
 }
+//The ball struct.
 struct Ball {
     ball_coord: Point2<f32>,
     ball_movement: Vector2<f32>,
@@ -66,7 +65,7 @@ impl MainState {
         }
     }
     fn ball_update_position(&mut self, player_val: CollideableObjects) {
-        if self.used_ball.ball_speed < 12.0 {
+        if self.used_ball.ball_speed < 10.0 {
             self.used_ball.ball_speed += 1.0;
         }
         let speed = self.used_ball.ball_speed;

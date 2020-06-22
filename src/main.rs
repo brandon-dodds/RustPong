@@ -116,7 +116,6 @@ impl MainState {
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
         while timer::check_update_time(ctx, TARGET_FPS) {
-            println!("{}", ggez::timer::fps(ctx));
             //Keyboard control code.
             if keyboard::is_key_pressed(ctx, KeyCode::W) && self.player1_coord.y >= 0.0 {
                 self.player1_coord.y -= 10.0;

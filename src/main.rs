@@ -92,6 +92,23 @@ impl MainState {
             }
         }
     }
+    fn player_ball_collision(&mut self, player_val: CollideableObjects) {
+        let x_coord = match player_val {
+            CollideableObjects::PLAYER1 => self.player1_coord.x,
+            _ => self.player2_coord.x,
+        };
+        let y_coord = match player_val {
+            CollideableObjects::PLAYER2 => self.player1_coord.y,
+            _ => self.player2_coord.y,
+        };
+        if self.used_ball.coord.x >= x_coord
+            && self.used_ball.coord.x <= x_coord + 10.0
+            && self.used_ball.coord.y >= y_coord
+            && self.used_ball.coord.y <= y_coord + 150.0
+        {
+            self.ball_update_position(player_val);
+        }
+    }
 }
 
 impl event::EventHandler for MainState {
@@ -111,20 +128,8 @@ impl event::EventHandler for MainState {
         }
         //Ball code.
         self.used_ball.coord += self.used_ball.movement;
-        if self.used_ball.coord.x >= self.player1_coord.x
-            && self.used_ball.coord.x <= self.player1_coord.x + 10.0
-            && self.used_ball.coord.y >= self.player1_coord.y
-            && self.used_ball.coord.y <= self.player1_coord.y + 150.0
-        {
-            self.ball_update_position(CollideableObjects::PLAYER1);
-        }
-        if self.used_ball.coord.x >= self.player2_coord.x
-            && self.used_ball.coord.x <= self.player2_coord.x + 10.0
-            && self.used_ball.coord.y >= self.player2_coord.y
-            && self.used_ball.coord.y <= self.player2_coord.y + 150.0
-        {
-            self.ball_update_position(CollideableObjects::PLAYER2);
-        }
+        self.player_ball_collision(CollideableObjects::PLAYER1);
+        self.player_ball_collision(CollideableObjects::PLAYER2);
         if self.used_ball.coord.y <= 0.0 {
             self.ball_update_position(CollideableObjects::TOP);
         }

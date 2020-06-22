@@ -13,11 +13,11 @@ enum CollideableObjects {
     TOP,
     BOTTOM,
 }
-//The ball struct.
+
 struct Ball {
-    ball_coord: Point2<f32>,
-    ball_movement: Vector2<f32>,
-    ball_speed: f32,
+    coord: Point2<f32>,
+    movement: Vector2<f32>,
+    speed: f32,
 }
 
 //The main state of the program (players, balls).
@@ -32,9 +32,9 @@ impl MainState {
         let player1_coord = Vector2::new(100.0, 285.0);
         let player2_coord = Vector2::new(1170.0, 285.0);
         let used_ball = Ball {
-            ball_coord: Point2::new(640.0, 360.0),
-            ball_movement: Vector2::new(-5.0, 0.0),
-            ball_speed: 3.0,
+            coord: Point2::new(640.0, 360.0),
+            movement: Vector2::new(-5.0, 0.0),
+            speed: 3.0,
         };
         let s = MainState {
             player1_coord,
@@ -56,7 +56,7 @@ impl MainState {
                     _ => self.player2_coord.y,
                 };
                 let paddle_middle = (current_y_coord * 2.0 + 150.0) / 2.0;
-                let diff = paddle_middle - self.used_ball.ball_coord.y;
+                let diff = paddle_middle - self.used_ball.coord.y;
                 let normalized_angle: f32 = diff / ((current_y_coord + 150.0) / 2.0);
                 let bounce_angle = normalized_angle * base_angle.to_radians();
                 return bounce_angle;
@@ -65,29 +65,29 @@ impl MainState {
         }
     }
     fn ball_update_position(&mut self, player_val: CollideableObjects) {
-        if self.used_ball.ball_speed < 10.0 {
-            self.used_ball.ball_speed += 1.0;
+        if self.used_ball.speed < 10.0 {
+            self.used_ball.speed += 1.0;
         }
-        let speed = self.used_ball.ball_speed;
+        let speed = self.used_ball.speed;
         match player_val {
             CollideableObjects::PLAYER1 => {
-                self.used_ball.ball_movement.x =
+                self.used_ball.movement.x =
                     speed * self.update_angle(CollideableObjects::PLAYER1).cos();
-                self.used_ball.ball_movement.y =
+                self.used_ball.movement.y =
                     speed * -self.update_angle(CollideableObjects::PLAYER1).sin();
             }
             CollideableObjects::PLAYER2 => {
-                self.used_ball.ball_movement.x =
+                self.used_ball.movement.x =
                     speed * -self.update_angle(CollideableObjects::PLAYER2).cos();
-                self.used_ball.ball_movement.y =
+                self.used_ball.movement.y =
                     speed * -self.update_angle(CollideableObjects::PLAYER2).sin();
             }
             CollideableObjects::TOP => {
-                self.used_ball.ball_movement.y =
+                self.used_ball.movement.y =
                     speed * -self.update_angle(CollideableObjects::TOP).sin();
             }
             CollideableObjects::BOTTOM => {
-                self.used_ball.ball_movement.y =
+                self.used_ball.movement.y =
                     speed * self.update_angle(CollideableObjects::BOTTOM).sin();
             }
         }
@@ -110,31 +110,31 @@ impl event::EventHandler for MainState {
             self.player2_coord.y += 10.0
         }
         //Ball code.
-        self.used_ball.ball_coord += self.used_ball.ball_movement;
-        if self.used_ball.ball_coord.x >= self.player1_coord.x
-            && self.used_ball.ball_coord.x <= self.player1_coord.x + 10.0
-            && self.used_ball.ball_coord.y >= self.player1_coord.y
-            && self.used_ball.ball_coord.y <= self.player1_coord.y + 150.0
+        self.used_ball.coord += self.used_ball.movement;
+        if self.used_ball.coord.x >= self.player1_coord.x
+            && self.used_ball.coord.x <= self.player1_coord.x + 10.0
+            && self.used_ball.coord.y >= self.player1_coord.y
+            && self.used_ball.coord.y <= self.player1_coord.y + 150.0
         {
             self.ball_update_position(CollideableObjects::PLAYER1);
         }
-        if self.used_ball.ball_coord.x >= self.player2_coord.x
-            && self.used_ball.ball_coord.x <= self.player2_coord.x + 10.0
-            && self.used_ball.ball_coord.y >= self.player2_coord.y
-            && self.used_ball.ball_coord.y <= self.player2_coord.y + 150.0
+        if self.used_ball.coord.x >= self.player2_coord.x
+            && self.used_ball.coord.x <= self.player2_coord.x + 10.0
+            && self.used_ball.coord.y >= self.player2_coord.y
+            && self.used_ball.coord.y <= self.player2_coord.y + 150.0
         {
             self.ball_update_position(CollideableObjects::PLAYER2);
         }
-        if self.used_ball.ball_coord.y <= 0.0 {
+        if self.used_ball.coord.y <= 0.0 {
             self.ball_update_position(CollideableObjects::TOP);
         }
-        if self.used_ball.ball_coord.y >= graphics::drawable_size(ctx).1 {
+        if self.used_ball.coord.y >= graphics::drawable_size(ctx).1 {
             self.ball_update_position(CollideableObjects::BOTTOM);
         }
-        if self.used_ball.ball_coord.x <= 0.0 {
+        if self.used_ball.coord.x <= 0.0 {
             ggez::event::quit(ctx);
         }
-        if self.used_ball.ball_coord.x >= graphics::drawable_size(ctx).0 {
+        if self.used_ball.coord.x >= graphics::drawable_size(ctx).0 {
             ggez::event::quit(ctx);
         }
         Ok(())
@@ -149,7 +149,7 @@ impl event::EventHandler for MainState {
         let ball = graphics::Mesh::new_circle(
             ctx,
             graphics::DrawMode::fill(),
-            self.used_ball.ball_coord,
+            self.used_ball.coord,
             10.0,
             2.0,
             graphics::WHITE,

@@ -7,6 +7,8 @@ use ggez::input::keyboard;
 use ggez::input::keyboard::KeyCode;
 use ggez::*;
 
+const TARGET_FPS: u32 = 60;
+
 enum CollideableObjects {
     PLAYER1,
     PLAYER2,
@@ -98,7 +100,7 @@ impl MainState {
             _ => self.player2_coord.x,
         };
         let y_coord = match player_val {
-            CollideableObjects::PLAYER2 => self.player1_coord.y,
+            CollideableObjects::PLAYER1 => self.player1_coord.y,
             _ => self.player2_coord.y,
         };
         if self.used_ball.coord.x >= x_coord
@@ -113,34 +115,37 @@ impl MainState {
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        //Keyboard control code.
-        if keyboard::is_key_pressed(ctx, KeyCode::W) && self.player1_coord.y >= 0.0 {
-            self.player1_coord.y -= 10.0;
-        }
-        if keyboard::is_key_pressed(ctx, KeyCode::S) && self.player1_coord.y <= 570.0 {
-            self.player1_coord.y += 10.0
-        }
-        if keyboard::is_key_pressed(ctx, KeyCode::Up) && self.player2_coord.y >= 0.0 {
-            self.player2_coord.y -= 10.0;
-        }
-        if keyboard::is_key_pressed(ctx, KeyCode::Down) && self.player2_coord.y <= 570.0 {
-            self.player2_coord.y += 10.0
-        }
-        //Ball code.
-        self.used_ball.coord += self.used_ball.movement;
-        self.player_ball_collision(CollideableObjects::PLAYER1);
-        self.player_ball_collision(CollideableObjects::PLAYER2);
-        if self.used_ball.coord.y <= 0.0 {
-            self.ball_update_position(CollideableObjects::TOP);
-        }
-        if self.used_ball.coord.y >= graphics::drawable_size(ctx).1 {
-            self.ball_update_position(CollideableObjects::BOTTOM);
-        }
-        if self.used_ball.coord.x <= 0.0 {
-            ggez::event::quit(ctx);
-        }
-        if self.used_ball.coord.x >= graphics::drawable_size(ctx).0 {
-            ggez::event::quit(ctx);
+        while timer::check_update_time(ctx, TARGET_FPS) {
+            println!("{}", ggez::timer::fps(ctx));
+            //Keyboard control code.
+            if keyboard::is_key_pressed(ctx, KeyCode::W) && self.player1_coord.y >= 0.0 {
+                self.player1_coord.y -= 10.0;
+            }
+            if keyboard::is_key_pressed(ctx, KeyCode::S) && self.player1_coord.y <= 570.0 {
+                self.player1_coord.y += 10.0
+            }
+            if keyboard::is_key_pressed(ctx, KeyCode::Up) && self.player2_coord.y >= 0.0 {
+                self.player2_coord.y -= 10.0;
+            }
+            if keyboard::is_key_pressed(ctx, KeyCode::Down) && self.player2_coord.y <= 570.0 {
+                self.player2_coord.y += 10.0
+            }
+            //Ball code.
+            self.used_ball.coord += self.used_ball.movement;
+            self.player_ball_collision(CollideableObjects::PLAYER1);
+            self.player_ball_collision(CollideableObjects::PLAYER2);
+            if self.used_ball.coord.y <= 0.0 {
+                self.ball_update_position(CollideableObjects::TOP);
+            }
+            if self.used_ball.coord.y >= graphics::drawable_size(ctx).1 {
+                self.ball_update_position(CollideableObjects::BOTTOM);
+            }
+            if self.used_ball.coord.x <= 0.0 {
+                ggez::event::quit(ctx);
+            }
+            if self.used_ball.coord.x >= graphics::drawable_size(ctx).0 {
+                ggez::event::quit(ctx);
+            }
         }
         Ok(())
     }

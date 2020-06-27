@@ -131,8 +131,11 @@ impl event::EventHandler for MainState {
             }
             //Ball code.
             self.used_ball.coord += self.used_ball.movement;
-            self.player_ball_collision(CollideableObjects::PLAYER1);
-            self.player_ball_collision(CollideableObjects::PLAYER2);
+            if self.used_ball.movement.x < 0.0 {
+                self.player_ball_collision(CollideableObjects::PLAYER1);
+            } else {
+                self.player_ball_collision(CollideableObjects::PLAYER2);
+            }
             if self.used_ball.coord.y <= 0.0 {
                 self.ball_update_position(CollideableObjects::TOP);
             }

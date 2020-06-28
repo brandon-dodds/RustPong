@@ -138,14 +138,12 @@ impl event::EventHandler for MainState {
             }
             if self.used_ball.coord.y <= 0.0 {
                 self.ball_update_position(CollideableObjects::TOP);
-            }
-            if self.used_ball.coord.y >= graphics::drawable_size(ctx).1 {
+            } else if self.used_ball.coord.y >= graphics::drawable_size(ctx).1 {
                 self.ball_update_position(CollideableObjects::BOTTOM);
             }
             if self.used_ball.coord.x <= 0.0 {
                 ggez::event::quit(ctx);
-            }
-            if self.used_ball.coord.x >= graphics::drawable_size(ctx).0 {
+            } else if self.used_ball.coord.x >= graphics::drawable_size(ctx).0 {
                 ggez::event::quit(ctx);
             }
         }

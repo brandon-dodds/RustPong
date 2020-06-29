@@ -51,12 +51,12 @@ impl MainState {
     // Use trigonometry to send the ball at an angle according to this difference.
     fn update_angle(&mut self, player_val: CollideableObjects) -> f32 {
         let base_angle: f32 = 75.0;
+        let current_y_coord = match player_val {
+            CollideableObjects::PLAYER1 => self.player1_coord.y,
+            _ => self.player2_coord.y,
+        };
         match player_val {
             CollideableObjects::PLAYER1 | CollideableObjects::PLAYER2 => {
-                let current_y_coord = match player_val {
-                    CollideableObjects::PLAYER1 => self.player1_coord.y,
-                    _ => self.player2_coord.y,
-                };
                 let paddle_middle = (current_y_coord * 2.0 + 150.0) / 2.0;
                 let diff = paddle_middle - self.used_ball.coord.y;
                 let normalized_angle: f32 = diff / ((current_y_coord + 150.0) / 2.0);

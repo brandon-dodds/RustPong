@@ -6,7 +6,9 @@ use ggez::graphics::DrawParam;
 use ggez::input::keyboard;
 use ggez::input::keyboard::KeyCode;
 use ggez::*;
-
+use std::fs::File;
+use std::io::Write;
+// Target FPS that should be achieved to allow proper synchronisation between clients.
 const TARGET_FPS: u32 = 60;
 
 enum CollideableObjects {
@@ -17,12 +19,14 @@ enum CollideableObjects {
 }
 
 struct Ball {
+    // The current coordinate of the ball.
     coord: Point2<f32>,
+    // This is the movement vector that the ball moves along.
     movement: Vector2<f32>,
+    // The speed affects the movement vector in the ball_update_position() function.
     speed: f32,
 }
 
-//The main state of the program (players, balls).
 struct MainState {
     player1_coord: Vector2<f32>,
     player2_coord: Vector2<f32>,
@@ -46,8 +50,8 @@ impl MainState {
 
         Ok(s)
     }
-    //Resetting the ball position/Handling the physics of ball.
-    //Maths works as follows, find the difference between the ball y coord and the middle of the bat.
+    // Resetting the ball position/Handling the physics of ball.
+    // Maths works as follows, find the difference between the ball y coord and the middle of the bat.
     // Use trigonometry to send the ball at an angle according to this difference.
     fn update_angle(&mut self, player_val: CollideableObjects) -> f32 {
         let mut base_angle: f32 = 75.0;
@@ -66,6 +70,8 @@ impl MainState {
             _ => base_angle,
         }
     }
+    // Updates the speed and the movement vector at which the ball is moving at.
+    // Function calls update_angle().
     fn ball_update_position(&mut self, player_val: CollideableObjects) {
         if self.used_ball.speed < 10.0 {
             self.used_ball.speed += 1.0;
@@ -94,6 +100,7 @@ impl MainState {
             }
         }
     }
+    // This function is used when a ball has collided with a player object.
     fn player_ball_collision(&mut self, player_val: CollideableObjects) {
         let x_coord = match player_val {
             CollideableObjects::PLAYER1 => self.player1_coord.x,
@@ -111,11 +118,40 @@ impl MainState {
             self.ball_update_position(player_val);
         }
     }
+    fn load_game_state(
+        &mut self,
+        ball: Ball,
+        player1_coord: Vector2<f32>,
+        player2_coord: Vector2<f32>,
+    ) {
+        self.used_ball = ball;
+        self.player1_coord = player1_coord;
+        self.player2_coord = player2_coord;
+    }
+    fn save_game_state_to_file(&mut self) -> std::io::Result<()> {
+        let mut game_state_file = File::create("state1.csv")?;
+        let game_state_string = format!(
+            "{},{},{},{},{},{},{},{},{}",
+            self.player1_coord.x,
+            self.player1_coord.y,
+            self.player2_coord.x,
+            self.player2_coord.y,
+            self.used_ball.coord.x,
+            self.used_ball.coord.y,
+            self.used_ball.movement.x,
+            self.used_ball.movement.y,
+            self.used_ball.speed
+        );
+        game_state_file.write_all(game_state_string.as_ref())?;
+        Ok(())
+    }
+    fn load_game_state_from_file() {}
 }
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
         while timer::check_update_time(ctx, TARGET_FPS) {
+            self.save_game_state_to_file();
             //Keyboard control code.
             if keyboard::is_key_pressed(ctx, KeyCode::W) && self.player1_coord.y >= 0.0 {
                 self.player1_coord.y -= 10.0;
@@ -128,6 +164,16 @@ impl event::EventHandler for MainState {
             }
             if keyboard::is_key_pressed(ctx, KeyCode::Down) && self.player2_coord.y <= 570.0 {
                 self.player2_coord.y += 10.0
+            }
+            if keyboard::is_key_pressed(ctx, KeyCode::F) {
+                let reset_ball = Ball {
+                    coord: Point2::new(640.0, 360.0),
+                    movement: Vector2::new(-5.0, 0.0),
+                    speed: 3.0,
+                };
+                let reset_p1 = Vector2::new(100.0, 285.0);
+                let reset_p2 = Vector2::new(1170.0, 285.0);
+                self.load_game_state(reset_ball, reset_p1, reset_p2);
             }
             //Ball code.
             self.used_ball.coord += self.used_ball.movement;

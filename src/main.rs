@@ -1,6 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use cgmath;
+mod ball;
+mod collideable_objects;
+
 use cgmath::{Point2, Vector2};
 use ggez::graphics::DrawParam;
 use ggez::input::keyboard;
@@ -11,33 +13,17 @@ use std::io::Write;
 // Target FPS that should be achieved to allow proper synchronisation between clients.
 const TARGET_FPS: u32 = 60;
 
-enum CollideableObjects {
-    PLAYER1,
-    PLAYER2,
-    TOP,
-    BOTTOM,
-}
-
-struct Ball {
-    // The current coordinate of the ball.
-    coord: Point2<f32>,
-    // This is the movement vector that the ball moves along.
-    movement: Vector2<f32>,
-    // The speed affects the movement vector in the ball_update_position() function.
-    speed: f32,
-}
-
 struct MainState {
     player1_coord: Vector2<f32>,
     player2_coord: Vector2<f32>,
-    used_ball: Ball,
+    used_ball: ball::Ball,
 }
 //Implements the main state. New is created on creation of the game state.
 impl MainState {
     fn new(_ctx: &mut Context) -> GameResult<MainState> {
         let player1_coord = Vector2::new(100.0, 285.0);
         let player2_coord = Vector2::new(1170.0, 285.0);
-        let used_ball = Ball {
+        let used_ball = ball::Ball {
             coord: Point2::new(640.0, 360.0),
             movement: Vector2::new(-5.0, 0.0),
             speed: 3.0,
@@ -53,12 +39,13 @@ impl MainState {
     // Resetting the ball position/Handling the physics of ball.
     // Maths works as follows, find the difference between the ball y coord and the middle of the bat.
     // Use trigonometry to send the ball at an angle according to this difference.
-    fn update_angle(&mut self, player_val: CollideableObjects) -> f32 {
+    fn update_angle(&mut self, player_val: collideable_objects::CollideableObjects) -> f32 {
         let mut base_angle: f32 = 75.0;
         match player_val {
-            CollideableObjects::PLAYER1 | CollideableObjects::PLAYER2 => {
+            collideable_objects::CollideableObjects::PLAYER1
+            | collideable_objects::CollideableObjects::PLAYER2 => {
                 let current_y_coord = match player_val {
-                    CollideableObjects::PLAYER1 => self.player1_coord.y,
+                    collideable_objects::CollideableObjects::PLAYER1 => self.player1_coord.y,
                     _ => self.player2_coord.y,
                 };
                 let paddle_middle = (current_y_coord * 2.0 + 150.0) / 2.0;
@@ -72,42 +59,54 @@ impl MainState {
     }
     // Updates the speed and the movement vector at which the ball is moving at.
     // Function calls update_angle().
-    fn ball_update_position(&mut self, player_val: CollideableObjects) {
+    fn ball_update_position(&mut self, player_val: collideable_objects::CollideableObjects) {
         if self.used_ball.speed < 10.0 {
             self.used_ball.speed += 1.0;
         }
         let speed = self.used_ball.speed;
         match player_val {
-            CollideableObjects::PLAYER1 => {
-                self.used_ball.movement.x =
-                    speed * self.update_angle(CollideableObjects::PLAYER1).cos();
-                self.used_ball.movement.y =
-                    speed * -self.update_angle(CollideableObjects::PLAYER1).sin();
+            collideable_objects::CollideableObjects::PLAYER1 => {
+                self.used_ball.movement.x = speed
+                    * self
+                        .update_angle(collideable_objects::CollideableObjects::PLAYER1)
+                        .cos();
+                self.used_ball.movement.y = speed
+                    * -self
+                        .update_angle(collideable_objects::CollideableObjects::PLAYER1)
+                        .sin();
             }
-            CollideableObjects::PLAYER2 => {
-                self.used_ball.movement.x =
-                    speed * -self.update_angle(CollideableObjects::PLAYER2).cos();
-                self.used_ball.movement.y =
-                    speed * -self.update_angle(CollideableObjects::PLAYER2).sin();
+            collideable_objects::CollideableObjects::PLAYER2 => {
+                self.used_ball.movement.x = speed
+                    * -self
+                        .update_angle(collideable_objects::CollideableObjects::PLAYER2)
+                        .cos();
+                self.used_ball.movement.y = speed
+                    * -self
+                        .update_angle(collideable_objects::CollideableObjects::PLAYER2)
+                        .sin();
             }
-            CollideableObjects::TOP => {
-                self.used_ball.movement.y =
-                    speed * -self.update_angle(CollideableObjects::TOP).sin();
+            collideable_objects::CollideableObjects::TOP => {
+                self.used_ball.movement.y = speed
+                    * -self
+                        .update_angle(collideable_objects::CollideableObjects::TOP)
+                        .sin();
             }
-            CollideableObjects::BOTTOM => {
-                self.used_ball.movement.y =
-                    speed * self.update_angle(CollideableObjects::BOTTOM).sin();
+            collideable_objects::CollideableObjects::BOTTOM => {
+                self.used_ball.movement.y = speed
+                    * self
+                        .update_angle(collideable_objects::CollideableObjects::BOTTOM)
+                        .sin();
             }
         }
     }
     // This function is used when a ball has collided with a player object.
-    fn player_ball_collision(&mut self, player_val: CollideableObjects) {
+    fn player_ball_collision(&mut self, player_val: collideable_objects::CollideableObjects) {
         let x_coord = match player_val {
-            CollideableObjects::PLAYER1 => self.player1_coord.x,
+            collideable_objects::CollideableObjects::PLAYER1 => self.player1_coord.x,
             _ => self.player2_coord.x,
         };
         let y_coord = match player_val {
-            CollideableObjects::PLAYER1 => self.player1_coord.y,
+            collideable_objects::CollideableObjects::PLAYER1 => self.player1_coord.y,
             _ => self.player2_coord.y,
         };
         if self.used_ball.coord.x >= x_coord
@@ -120,7 +119,7 @@ impl MainState {
     }
     fn load_game_state(
         &mut self,
-        ball: Ball,
+        ball: ball::Ball,
         player1_coord: Vector2<f32>,
         player2_coord: Vector2<f32>,
     ) {
@@ -166,7 +165,7 @@ impl event::EventHandler for MainState {
                 self.player2_coord.y += 10.0
             }
             if keyboard::is_key_pressed(ctx, KeyCode::F) {
-                let reset_ball = Ball {
+                let reset_ball = ball::Ball {
                     coord: Point2::new(640.0, 360.0),
                     movement: Vector2::new(-5.0, 0.0),
                     speed: 3.0,
@@ -178,14 +177,14 @@ impl event::EventHandler for MainState {
             //Ball code.
             self.used_ball.coord += self.used_ball.movement;
             if self.used_ball.movement.x < 0.0 {
-                self.player_ball_collision(CollideableObjects::PLAYER1);
+                self.player_ball_collision(collideable_objects::CollideableObjects::PLAYER1);
             } else {
-                self.player_ball_collision(CollideableObjects::PLAYER2);
+                self.player_ball_collision(collideable_objects::CollideableObjects::PLAYER2);
             }
             if self.used_ball.coord.y <= 0.0 {
-                self.ball_update_position(CollideableObjects::TOP);
+                self.ball_update_position(collideable_objects::CollideableObjects::TOP);
             } else if self.used_ball.coord.y >= graphics::drawable_size(ctx).1 {
-                self.ball_update_position(CollideableObjects::BOTTOM);
+                self.ball_update_position(collideable_objects::CollideableObjects::BOTTOM);
             }
             if self.used_ball.coord.x <= 0.0 {
                 ggez::event::quit(ctx);
